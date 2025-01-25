@@ -77,7 +77,7 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       checkActive(__actionId);
       await actionFn({ ticker, price, amount, action });
       checkActive(__actionId);
-      logger?.({ action: Action.BUY, timestamp: dayjs().unix(), amount, price });
+      logger?.({ action, timestamp: dayjs().unix(), amount, price });
     };
 
     const tick = async (): Promise<void> => {
