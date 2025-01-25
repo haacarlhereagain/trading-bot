@@ -57,13 +57,14 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
     } = props;
     const retry = createRetry();
 
-    const checkActive = (): void => {
-      if (!retry.state().isActive) {
-        throw new Error('checkActive(): bot has been stopped');
+    const checkActive = (actionId: number): void => {
+      const { isActive, id } = retry.state();
+      if (!isActive || actionId !== id) {
+        throw new Error('checkActive(): aborted operation');
       }
     }
   
-    const executeTrade = async (action: Action, price: string): Promise<void> => {
+    const executeTrade = async (__actionId: number, action: Action, price: string): Promise<void> => {
       if (action === Action.HOLD) {
         logger?.({ action, timestamp: dayjs().unix() });
         return;
@@ -73,18 +74,19 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
         action,
         price,
       })
-      checkActive();
+      checkActive(__actionId);
       await actionFn({ ticker, price, amount, action });
-      checkActive();
+      checkActive(__actionId);
       logger?.({ action: Action.BUY, timestamp: dayjs().unix(), amount, price });
     };
 
     const tick = async (): Promise<void> => {
+      const __actionId = retry.state().id;
       const price = await getCurrentPriceFn(props.ticker);
-      checkActive();
+      checkActive(__actionId);
       const action = await analyzeMarketFn(ticker, price);
-      checkActive();
-      await executeTrade(action, price);
+      checkActive(__actionId);
+      await executeTrade(__actionId, action, price);
     };
 
     const start = (): void => {

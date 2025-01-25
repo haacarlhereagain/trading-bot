@@ -25,14 +25,11 @@ export const RETRY_OPTIONS: IRetryInternalOptions = Object.freeze({
 
 export const createRetry = () => {
     const id = new IncrId();
-
-    const _state = {
-        isActive: false,
-    }
+    let isActive = false;
 
     const stop = (): void => {
         id.incr();
-        _state.isActive = false;
+        isActive = false;
     }
 
     const _retry = async <T = unknown, R = Error>(
@@ -70,12 +67,15 @@ export const createRetry = () => {
         options?: Partial<IRetryOptions<T, R>>,
     ): Promise<T> => {
         stop();
-        _state.isActive = true;
+        isActive = true;
         return _retry<T, R>(handler, args, options);
     }
 
     const state = () => {
-        return structuredClone(_state);
+        return {
+            isActive,
+            id: id.id,
+        };
     }
 
     return {
