@@ -5,7 +5,7 @@ export interface IRetryOptions<T = unknown, R = Error> {
     isAbortRetryError?: (error: R) => boolean;
     retryErrorTimeout?: number;
     isNeedRetry?: (response: T) => boolean;
-    retryTimeout?: number;
+    retryTimeoutInMs?: number;
     maxErrorRetry?: number;
 }
 
@@ -15,7 +15,7 @@ export interface IRetryInternalOptions {
 
 export const RETRY_REQUEST_OPTIONS: IRetryOptions<unknown, unknown> = Object.freeze({
     retryErrorTimeout: 300,
-    retryTimeout: 1000,
+    retryTimeoutInMs: 1000,
     maxErrorRetry: 0,
 });
 
@@ -42,12 +42,12 @@ export const createRetry = () => {
             return;
         }
         const _options = { ...RETRY_REQUEST_OPTIONS, ...options };
-        const { isAbortRetryError, retryErrorTimeout, retryTimeout, isNeedRetry, maxErrorRetry } = _options;
+        const { isAbortRetryError, retryErrorTimeout, retryTimeoutInMs, isNeedRetry, maxErrorRetry } = _options;
         try {
             const response = await handler(...args);
             retryData.currentErrorRetry = 0;
             if (isNeedRetry?.(response)) {
-                await wait(retryTimeout);
+                await wait(retryTimeoutInMs);
                 return await _retry<T, R>(handler, args, _options, retryData);
             }
             return response;

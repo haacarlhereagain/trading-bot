@@ -1,4 +1,4 @@
-import { Action, TickerGeneric } from "../shared";
+import { Action, ActionChanging, TickerGeneric } from "../shared";
 
 export const WAIT_MIN = 100;
 
@@ -14,7 +14,7 @@ export const TICK_INTERVAL_IN_MS = MS_IN_M * 10;
 
 export const MAX_ERROR_RETRY = 5;
 
-export const ACTION_COEFFICIENTS: Record<Action.BUY | Action.SELL, number> = {
+export const ACTION_COEFFICIENTS: Record<ActionChanging, number> = {
     [Action.BUY]: 0.1,
     [Action.SELL]: 0.7,
 } as const

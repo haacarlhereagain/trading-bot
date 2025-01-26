@@ -1,7 +1,7 @@
 // import express from 'express';
 // import bodyParser from 'body-parser';
 // import initRoutes from './routers';
-import { ActionFn, AnalyzeMarketFn, createTradingBot, GetActionAmountFn, GetCurrentPriceFn, LoggerPayload } from './tradingBot';
+import { createTradingBot, ExecuteActionFn, GetActionAmountFn, GetCurrentPriceFn } from './tradingBot';
 import { Action, TickerGeneric } from './shared';
 import { createLogger } from './logger';
 import { createWallet } from './mocks/wallet/wallet';
@@ -42,28 +42,28 @@ const getActionAmountFn: GetActionAmountFn<Ticker> = async ({
 }
 
 // todo implement
-const actionFn: ActionFn<Ticker> = async ({
+const executeActionFn: ExecuteActionFn<Ticker> = async ({
     amount, price, action
 }): Promise<void> => {
     const method = action === Action.BUY ? walletsConnector.buy : walletsConnector.sell;
     await method(amount, price);
 }
 
-const logger = createLogger<LoggerPayload>();
+const logger = createLogger();
 
 const tradingBot = createTradingBot<Ticker>({
     ticker: TICKER,
     getCurrentPriceFn,
-    analyzeMarketFn: async (ticker: Ticker, price: string) => {
-        const data = await generatePriceData(1672531200);
-        // подменять методы
-        return analyzeMarket_movingAverage_simple(data, price);
+    analyzeMarketFn: async (ticker: Ticker, currentPrice: string) => {
+        // todo use ticker
+        const [marketData, logs] = await Promise.all([generatePriceData(1672531200), logger.getLogs()]);
+        return analyzeMarket_movingAverage_simple({ marketData, logs, currentPrice });
     },
     getActionAmountFn,
-    actionFn,
+    executeActionFn,
     tickIntervalInS: TICK_INTERVAL_IN_MS,
     maxErrorRetry: MAX_ERROR_RETRY,
-    logger: logger.add,
+    logActionFn: logger.log,
 });
 
-// tradingBot.start();
+tradingBot.start();

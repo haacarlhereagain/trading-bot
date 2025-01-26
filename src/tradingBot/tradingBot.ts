@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Action, PriceEntity, TickerGeneric, TimeRange } from '../shared';
+import { Action, ActionChanging, PriceEntity, TickerGeneric, TimeRange } from '../shared';
 import { createRetry } from '../shared';
 
 interface GetPriceHistoryFnProps<Ticker extends TickerGeneric> {
@@ -11,9 +11,9 @@ export type GetPriceHistoryFn<Ticker extends TickerGeneric> = (props: GetPriceHi
 
 export type GetCurrentPriceFn<Ticker extends TickerGeneric> = (ticker: Ticker) => Promise<string>;
 
-export type AnalyzeMarketFn<Ticker extends TickerGeneric> = (ticker: Ticker, price: string) => Promise<Action>;
+export type AnalyzeMarketFn<Ticker extends TickerGeneric> = (ticker: Ticker, currentPrice: string) => Promise<Action>;
 
-export type ActionFn<Ticker extends TickerGeneric> = (payload: {
+export type ExecuteActionFn<Ticker extends TickerGeneric> = (payload: {
   amount: string;
   price: string;
   ticker: Ticker;
@@ -22,26 +22,29 @@ export type ActionFn<Ticker extends TickerGeneric> = (payload: {
 
 export type GetActionAmountFn<Ticker extends TickerGeneric> = (payload: {
   ticker: Ticker;
-  action: Action.BUY | Action.SELL;
+  action: ActionChanging;
   price: string;
 }) => Promise<string>;
 
-export interface LoggerPayload {
-  action: Action,
+export interface ActionLog<Ticker extends TickerGeneric> {
+  action: ActionChanging,
   timestamp: number;
-  amount?: string; 
-  price?: string;
+  amount: string; 
+  price: string;
+  ticker: Ticker;
 }
+
+export type LogActionFn<Ticker extends TickerGeneric> = (log: ActionLog<Ticker>) => Promise<void>;
 
 export interface CreateTradingBotProps<Ticker extends TickerGeneric> {
     ticker: Ticker;
     getCurrentPriceFn: GetCurrentPriceFn<Ticker>;
     analyzeMarketFn: AnalyzeMarketFn<Ticker>;
     getActionAmountFn: GetActionAmountFn<Ticker>;
-    actionFn: ActionFn<Ticker>;
+    executeActionFn: ExecuteActionFn<Ticker>;
     tickIntervalInS: number;
     maxErrorRetry: number;
-    logger?: (payload: LoggerPayload) => void;
+    logActionFn: LogActionFn<Ticker>;
 }
 
 export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTradingBotProps<Ticker>) => {
@@ -51,9 +54,9 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       maxErrorRetry,
       getActionAmountFn,
       getCurrentPriceFn,
-      logger,
+      logActionFn,
       analyzeMarketFn,
-      actionFn,
+      executeActionFn,
     } = props;
     const retry = createRetry();
 
@@ -64,20 +67,19 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       }
     }
   
-    const executeTrade = async (__actionId: number, action: Action, price: string): Promise<void> => {
+    const _executeTrade = async (__actionId: number, action: Action, price: string): Promise<void> => {
       if (action === Action.HOLD) {
-        logger?.({ action, timestamp: dayjs().unix() });
         return;
       }
+
       const amount = await getActionAmountFn({
         ticker,
         action,
         price,
       })
       checkActive(__actionId);
-      await actionFn({ ticker, price, amount, action });
-      checkActive(__actionId);
-      logger?.({ action, timestamp: dayjs().unix(), amount, price });
+      await executeActionFn({ ticker, price, amount, action });
+      await logActionFn({ action, timestamp: dayjs().unix(), amount, price, ticker });
     };
 
     const tick = async (): Promise<void> => {
@@ -85,8 +87,11 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       const price = await getCurrentPriceFn(props.ticker);
       checkActive(__actionId);
       const action = await analyzeMarketFn(ticker, price);
+      if (action === Action.HOLD) {
+        return;
+      }
       checkActive(__actionId);
-      await executeTrade(__actionId, action, price);
+      await _executeTrade(__actionId, action, price);
     };
 
     const start = (): void => {
@@ -95,7 +100,7 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       }
 
       retry.use(tick, [], {
-        retryTimeout: tickIntervalInS,
+        retryTimeoutInMs: tickIntervalInS,
         isNeedRetry: () => true,
         maxErrorRetry,
       });
