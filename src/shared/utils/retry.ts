@@ -23,6 +23,11 @@ export const RETRY_OPTIONS: IRetryInternalOptions = Object.freeze({
     currentErrorRetry: 0,
 });
 
+export interface RetryState {
+    id: number;
+    isActive: boolean;
+}
+
 export const createRetry = () => {
     const id = new IncrId();
     let isActive = false;
@@ -71,7 +76,7 @@ export const createRetry = () => {
         return _retry<T, R>(handler, args, options);
     }
 
-    const state = () => {
+    const state = (): RetryState => {
         return {
             isActive,
             id: id.id,

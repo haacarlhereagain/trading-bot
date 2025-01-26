@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { Action, PriceEntity } from "../shared";
+import { Action } from "../../shared";
 import { MarketAnalyzer, MarketAnalyzerProps } from "./marketAnalyzer.types";
 
 export const analyzeMarket_movingAverage_simple: MarketAnalyzer = ({

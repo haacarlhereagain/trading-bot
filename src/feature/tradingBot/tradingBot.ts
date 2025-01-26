@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
-import { Action, ActionChanging, PriceEntity, TickerGeneric, TimeRange } from '../shared';
-import { createRetry } from '../shared';
+import { Action, ActionChanging, PriceEntity, TickerGeneric, TimeRange, createRetry } from '../../shared';
 
 interface GetPriceHistoryFnProps<Ticker extends TickerGeneric> {
   timeRange: TimeRange;
@@ -62,8 +61,8 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
 
     const checkActive = (actionId: number): void => {
       const { isActive, id } = retry.state();
-      if (!isActive || actionId !== id) {
-        throw new Error('checkActive(): aborted operation');
+      if (isActive && actionId !== id) {
+        throw new Error('checkActive(): abort operation');
       }
     }
   
@@ -113,5 +112,6 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
     return {
       start,
       stop,
+      tick,
     };
 };

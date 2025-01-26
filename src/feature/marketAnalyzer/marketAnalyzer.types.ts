@@ -1,5 +1,5 @@
-import { Action, PriceEntity } from "../shared";
-import { Ticker } from "../ticker";
+import { Action, PriceEntity } from "../../shared";
+import { Ticker } from "../../ticker";
 import { ActionLog } from "../tradingBot";
 
 export interface MarketAnalyzerProps {

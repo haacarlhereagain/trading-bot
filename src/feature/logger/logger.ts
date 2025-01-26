@@ -1,6 +1,6 @@
-import { waitRandom } from "../mocks/waitRandom";
-import { Ticker } from "../ticker";
-import { LogActionFn, ActionLog } from "../tradingBot";
+import { waitRandom } from "../../mocks/waitRandom";
+import { Ticker } from "../../ticker";
+import { LogActionFn, ActionLog } from "../../feature";
 
 // todo нормальный логгер (монго)
 export const createLogger = () => {
