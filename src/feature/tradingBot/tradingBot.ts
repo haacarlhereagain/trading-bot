@@ -10,7 +10,15 @@ export type GetPriceHistoryFn<Ticker extends TickerGeneric> = (props: GetPriceHi
 
 export type GetCurrentPriceFn<Ticker extends TickerGeneric> = (ticker: Ticker) => Promise<string>;
 
-export type AnalyzeMarketFn<Ticker extends TickerGeneric> = (ticker: Ticker, currentPrice: string) => Promise<Action>;
+export interface MarketAnalyze<Meta = undefined> {
+  action: Action;
+  meta: Meta;
+}
+
+export type AnalyzeMarketFn<
+  Ticker extends TickerGeneric,
+  Meta = undefined,
+> = (ticker: Ticker, currentPrice: string) => Promise<MarketAnalyze<Meta>>;
 
 export type ExecuteActionFn<Ticker extends TickerGeneric> = (payload: {
   amount: string;
@@ -25,28 +33,38 @@ export type GetActionAmountFn<Ticker extends TickerGeneric> = (payload: {
   price: string;
 }) => Promise<string>;
 
-export interface ActionLog<Ticker extends TickerGeneric> {
+export interface ActionLog<
+  Ticker extends TickerGeneric,
+  MarketAnalyzeMeta = undefined,
+> {
   action: ActionChanging,
   timestamp: number;
   amount: string; 
   price: string;
   ticker: Ticker;
+  meta: MarketAnalyzeMeta;
 }
 
-export type LogActionFn<Ticker extends TickerGeneric> = (log: ActionLog<Ticker>) => Promise<void>;
+export type LogActionFn<Ticker extends TickerGeneric, MarketAnalyzeMeta = undefined> = (log: ActionLog<Ticker, MarketAnalyzeMeta>) => Promise<void>;
 
-export interface CreateTradingBotProps<Ticker extends TickerGeneric> {
+export interface CreateTradingBotProps<
+  Ticker extends TickerGeneric,
+  MarketAnalyzeMeta = undefined,
+> {
     ticker: Ticker;
     getCurrentPriceFn: GetCurrentPriceFn<Ticker>;
-    analyzeMarketFn: AnalyzeMarketFn<Ticker>;
+    analyzeMarketFn: AnalyzeMarketFn<Ticker, MarketAnalyzeMeta>;
     getActionAmountFn: GetActionAmountFn<Ticker>;
     executeActionFn: ExecuteActionFn<Ticker>;
     tickIntervalInS: number;
     maxErrorRetry: number;
-    logActionFn: LogActionFn<Ticker>;
+    logActionFn: LogActionFn<Ticker, MarketAnalyzeMeta>;
 }
 
-export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTradingBotProps<Ticker>) => {
+export const createTradingBot = <
+  Ticker extends TickerGeneric,
+  MarketAnalyzeMeta = undefined,
+>(props: CreateTradingBotProps<Ticker, MarketAnalyzeMeta>) => {
     const {
       ticker,
       tickIntervalInS,
@@ -66,7 +84,7 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       }
     }
   
-    const _executeTrade = async (__actionId: number, action: Action, price: string): Promise<void> => {
+    const _executeTrade = async (__actionId: number, { action, meta }: MarketAnalyze<MarketAnalyzeMeta>, price: string): Promise<void> => {
       if (action === Action.HOLD) {
         return;
       }
@@ -78,19 +96,20 @@ export const createTradingBot = <Ticker extends TickerGeneric>(props: CreateTrad
       })
       checkActive(__actionId);
       await executeActionFn({ ticker, price, amount, action });
-      await logActionFn({ action, timestamp: dayjs().unix(), amount, price, ticker });
+      await logActionFn({ action, timestamp: dayjs().unix(), amount, price, ticker, meta });
     };
 
     const tick = async (): Promise<void> => {
       const __actionId = retry.state().id;
       const price = await getCurrentPriceFn(props.ticker);
       checkActive(__actionId);
-      const action = await analyzeMarketFn(ticker, price);
-      if (action === Action.HOLD) {
+      const marketAnalyzeResult = await analyzeMarketFn(ticker, price);
+
+      if (marketAnalyzeResult.action === Action.HOLD) {
         return;
       }
       checkActive(__actionId);
-      await _executeTrade(__actionId, action, price);
+      await _executeTrade(__actionId, marketAnalyzeResult, price);
     };
 
     const start = (): void => {

@@ -1,11 +1,11 @@
-import { Action, PriceEntity } from "../../shared";
+import { PriceEntity } from "../../shared";
 import { Ticker } from "../../ticker";
-import { ActionLog } from "../tradingBot";
+import { ActionLog, MarketAnalyze } from "../tradingBot";
 
 export interface MarketAnalyzerProps {
     marketData: PriceEntity[];
     currentPrice: string;
-    logs:  ActionLog<Ticker>[];
+    logs: ActionLog<Ticker>[];
 }
 
-export type MarketAnalyzer = (props: MarketAnalyzerProps) => Action;
+export type MarketAnalyzer<Meta> = (props: MarketAnalyzerProps) => MarketAnalyze<Meta>;

@@ -6,10 +6,11 @@ import { MAX_ERROR_RETRY, TICK_INTERVAL_IN_MS } from './const';
 import { Ticker } from './ticker';
 import { getActionAmount, executeAction, getCurrentPrice } from './external';
 import { analyzeMarket_movingAverage_simple, createTradingBot, createLogger } from './feature';
+import { AnalyzeMarketMeta } from './shared';
 
 const logger = createLogger();
 
-const tradingBot = createTradingBot<Ticker>({
+const tradingBot = createTradingBot<Ticker, AnalyzeMarketMeta>({
     ticker: Ticker.Asdf,
     getCurrentPriceFn: getCurrentPrice,
     analyzeMarketFn: async (ticker: Ticker, currentPrice: string) => {

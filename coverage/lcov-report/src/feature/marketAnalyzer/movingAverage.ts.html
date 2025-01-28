@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/shared/utils/incrId.ts</title>
+    <title>Code coverage report for src/feature/marketAnalyzer/movingAverage.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/shared/utils</a> incrId.ts</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/feature/marketAnalyzer</a> movingAverage.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.72% </span>
+                <span class="strong">23.52% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>8/11</span>
+                <span class='fraction'>4/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/4</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">70% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>7/10</span>
+                <span class='fraction'>3/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -79,11 +79,17 @@
 <a name='L14'></a><a href='#L14'>14</a>
 <a name='L15'></a><a href='#L15'>15</a>
 <a name='L16'></a><a href='#L16'>16</a>
-<a name='L17'></a><a href='#L17'>17</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -92,25 +98,43 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">export class IncrId {
-    private _id = 0;
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import Decimal from "decimal.js";
+import { Action } from "../../shared";
+import { MarketAnalyzer, MarketAnalyzerProps } from "./marketAnalyzer.types";
+import { MarketAnalyze } from "../tradingBot";
 &nbsp;
-    public get id(): number {
-        return this._id;
+export const analyzeMarket_movingAverage_simple: MarketAnalyzer = <span class="fstat-no" title="function not covered" >({</span>
+    marketData<span class="cstat-no" title="statement not covered" >, c</span>urrentPrice<span class="cstat-no" title="statement not covered" >, l</span>ogs<span class="cstat-no" title="statement not covered" ></span>
+}: MarketAnalyzerProps): MarketAnalyze&lt;Record&lt;string, unknown&gt;&gt; =&gt; {
+    const result: ReturnType&lt;MarketAnalyzer&gt; = <span class="cstat-no" title="statement not covered" >{</span>
+        meta: {},
+        action: undefined,
+    }
+    // todo use logs
+    const average = <span class="cstat-no" title="statement not covered" >marketData.reduce(<span class="fstat-no" title="function not covered" >(s</span>um, { price<span class="cstat-no" title="statement not covered" > })</span> =&gt; <span class="cstat-no" title="statement not covered" >new Decimal(sum).plus(price), n</span>ew Decimal(0)).div(marketData.length);</span>
+    
+<span class="cstat-no" title="statement not covered" >    if (average.lessThan(currentPrice)) {</span>
+<span class="cstat-no" title="statement not covered" >        result.action = Action.BUY;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (average.greaterThan(currentPrice)) {</span>
+<span class="cstat-no" title="statement not covered" >        result.action = Action.SELL;</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        result.action = Action.HOLD;</span>
     }
 &nbsp;
-<span class="fstat-no" title="function not covered" >    public i</span>ncr(): number {
-<span class="cstat-no" title="statement not covered" >        this._id++;</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >        return this.id;</span>
-    }
-&nbsp;
-<span class="fstat-no" title="function not covered" >    public r</span>eset(): void {
-<span class="cstat-no" title="statement not covered" >        this._id = 0;</span>
-    }
+<span class="cstat-no" title="statement not covered" >    return result;</span>
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

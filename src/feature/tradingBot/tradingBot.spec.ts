@@ -2,8 +2,8 @@ import { ACTION_COEFFICIENTS, FIAT_TICKER, MAX_ERROR_RETRY, TICK_INTERVAL_IN_MS 
 import { createLogger } from '../../feature';
 import { createWallet, createWalletsConnector, Wallet } from '../../mocks';
 import { Ticker } from '../../ticker';
-import { AnalyzeMarketFn, createTradingBot, ExecuteActionFn, GetActionAmountFn } from './tradingBot';
-import { Action, TickerGeneric } from '../../shared';
+import { AnalyzeMarketFn, createTradingBot, ExecuteActionFn, GetActionAmountFn, MarketAnalyze } from './tradingBot';
+import { Action, AnalyzeMarketMeta, TickerGeneric } from '../../shared';
 import { waitRandom } from '../../mocks/';
 import Decimal from 'decimal.js';
 
@@ -64,12 +64,16 @@ test('tradingBot', async () => {
         action = action_;
     }
 
-    const analyzeMarket: AnalyzeMarketFn<Ticker> = async (ticker: Ticker, currentPrice: string): Promise<Action> => {
+    const analyzeMarket: AnalyzeMarketFn<Ticker, AnalyzeMarketMeta> = async (ticker: Ticker, currentPrice: string): Promise<MarketAnalyze<AnalyzeMarketMeta>> => {
         await waitRandom();
-        return action;
+
+        return {
+            action,
+            meta: { rsi: '1' },
+        };
     }
 
-    const tradingBot = createTradingBot<Ticker>({
+    const tradingBot = createTradingBot<Ticker, AnalyzeMarketMeta>({
         ticker: TICKER,
         getCurrentPriceFn: getCurrentPrice,
         analyzeMarketFn: analyzeMarket,
