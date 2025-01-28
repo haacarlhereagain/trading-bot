@@ -5,7 +5,7 @@ import { MarketAnalyze } from "../tradingBot";
 
 export const analyzeMarket_movingAverage_simple: MarketAnalyzer<AnalyzeMarketMeta> = ({
     marketData, currentPrice, logs
-}: MarketAnalyzerProps): MarketAnalyze<AnalyzeMarketMeta> => {
+}: MarketAnalyzerProps<AnalyzeMarketMeta>): MarketAnalyze<AnalyzeMarketMeta> => {
     const result: MarketAnalyze<AnalyzeMarketMeta> = {
         meta: { rsi: '1' },
         action: undefined,
