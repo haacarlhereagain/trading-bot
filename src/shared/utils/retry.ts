@@ -37,43 +37,45 @@ export const createRetry = () => {
         isActive = false;
     }
 
-    const _retry = async <T = unknown, R = Error>(
-        handler: (...args: Array<unknown>) => Promise<T> | T,
-        args: Array<unknown>,
-        options?: Partial<IRetryOptions<T, R>>,
-        retryData = structuredClone({ ...RETRY_OPTIONS, id: id.incr() })
-    ): Promise<T> => {
-        if (retryData.id !== id.id) {
-            return;
-        }
-        const _options = { ...RETRY_REQUEST_OPTIONS, ...options };
-        const { isAbortRetryError, retryErrorTimeout, retryTimeoutInMs, isNeedRetry, maxErrorRetry } = _options;
-        try {
-            const response = await handler(...args);
-            retryData.currentErrorRetry = 0;
-            if (isNeedRetry?.(response)) {
-                await wait(retryTimeoutInMs);
-                return await _retry<T, R>(handler, args, _options, retryData);
-            }
-            return response;
-        } catch (e) {
-            if (retryData.currentErrorRetry >= maxErrorRetry || isAbortRetryError?.(e)) {
-                throw Error(e);
-            }
-            await wait(retryErrorTimeout);
-            retryData.currentErrorRetry++;
-            return _retry<T, R>(handler, args, _options, retryData);
-        }
-    }
-
-    const use = <T = unknown, R = Error>(
+    const use = async <T = unknown, R = Error>(
         handler: (...args: Array<unknown>) => Promise<T> | T,
         args?: Array<unknown>,
         options?: Partial<IRetryOptions<T, R>>,
     ): Promise<T> => {
         stop();
         isActive = true;
-        return _retry<T, R>(handler, args, options);
+        id.incr();
+        const _id = id.id;
+        let errorRetry = 0;
+        let hasError = false;
+
+        while (true) {
+            if (!isActive || _id !== id.id) {
+                throw new Error('createRetry.use(): is inactive');
+            } 
+
+            const _options = { ...RETRY_REQUEST_OPTIONS, ...options };
+            const { isAbortRetryError, retryErrorTimeout, retryTimeoutInMs, isNeedRetry, maxErrorRetry } = _options;
+
+            try {
+                hasError && errorRetry++;
+                const response = await handler(...args);
+                errorRetry = 0;
+                hasError = false;
+
+                if (!isNeedRetry?.(response)) {
+                    return response;
+                }
+                
+                await wait(retryTimeoutInMs);
+            } catch (e) {
+                hasError = true;
+                if (errorRetry >= maxErrorRetry || isAbortRetryError?.(e)) {
+                    throw Error(e);
+                }
+                await wait(retryErrorTimeout);
+            }
+        }
     }
 
     const state = (): RetryState => {

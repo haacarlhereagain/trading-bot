@@ -6,7 +6,7 @@ export const WAIT_MAX = 300;
 
 export const FIAT_TICKER: TickerGeneric = 'usdt';
 
-export const MS_IN_S = 1000;
+export const MS_IN_S = 1_000;
 
 export const MS_IN_M = MS_IN_S * 60;
 
