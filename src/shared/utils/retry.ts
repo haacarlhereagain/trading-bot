@@ -37,24 +37,29 @@ export const createRetry = () => {
         isActive = false;
     }
 
-    const use = async <T = unknown, R = Error>(
-        handler: (...args: Array<unknown>) => Promise<T> | T,
-        args?: Array<unknown>,
+    const use = async <
+        T = unknown,
+        R = Error,
+        E extends ((...args: Array<unknown>) => Promise<T> | T) = ((...args: Array<unknown>) => Promise<T> | T),
+    >(
+        handler: E,
+        args?: Parameters<E>,
         options?: Partial<IRetryOptions<T, R>>,
     ): Promise<T> => {
         stop();
         isActive = true;
-        id.incr();
         const _id = id.id;
         let errorRetries = 0;
 
         while (true) {
             if (!isActive || _id !== id.id) {
-                throw new Error('createRetry.use(): is inactive');
+                return;
             } 
 
-            const _options = { ...RETRY_REQUEST_OPTIONS, ...options };
-            const { isAbortRetryError, retryErrorTimeout, retryTimeoutInMs, isNeedRetry, maxErrorRetry } = _options;
+            const { isAbortRetryError, retryErrorTimeout, retryTimeoutInMs, isNeedRetry, maxErrorRetry } = {
+                ...RETRY_REQUEST_OPTIONS,
+                ...options,
+            };
 
             try {
                 errorRetries && errorRetries++;
