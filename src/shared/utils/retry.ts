@@ -46,8 +46,7 @@ export const createRetry = () => {
         isActive = true;
         id.incr();
         const _id = id.id;
-        let errorRetry = 0;
-        let hasError = false;
+        let errorRetries = 0;
 
         while (true) {
             if (!isActive || _id !== id.id) {
@@ -58,10 +57,9 @@ export const createRetry = () => {
             const { isAbortRetryError, retryErrorTimeout, retryTimeoutInMs, isNeedRetry, maxErrorRetry } = _options;
 
             try {
-                hasError && errorRetry++;
+                errorRetries && errorRetries++;
                 const response = await handler(...args);
-                errorRetry = 0;
-                hasError = false;
+                errorRetries = 0;
 
                 if (!isNeedRetry?.(response)) {
                     return response;
@@ -69,8 +67,8 @@ export const createRetry = () => {
                 
                 await wait(retryTimeoutInMs);
             } catch (e) {
-                hasError = true;
-                if (errorRetry >= maxErrorRetry || isAbortRetryError?.(e)) {
+                !errorRetries && (errorRetries = 1);
+                if (errorRetries >= maxErrorRetry || isAbortRetryError?.(e)) {
                     throw Error(e);
                 }
                 await wait(retryErrorTimeout);
